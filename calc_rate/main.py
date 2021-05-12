@@ -13,6 +13,8 @@ def calc_rate(proba, try_num):
     print("試行回数:", try_num)
     print("期待値:", proba * try_num)
 
+
+
 def plot_rate(proba, set_num):
     """
 
@@ -40,12 +42,28 @@ def plot_rate(proba, set_num):
 
     plt.show()
 
+def change_rate_plot(proba,set_num,second_proba,second_try_num):
+    """
+    途中で確率変更した場合の確率変遷
+    :param proba:
+    :param set_num:
+    :param second_proba:
+    :param second_try_num:
+    :return:
+    """
 
-def main(proba, try_num, set_num):
+
+def main(proba, try_num, set_num,second_flg,
+         second_proba=None, second_try_num=None, second_set_num=None):
     # 期待値計算
-    calc_rate(proba, try_num)
+    #calc_rate(proba, try_num)
     # 可視化
-    plot_rate(proba, set_num)
+    #plot_rate(proba, set_num)
+    if second_flg == "True":
+        change_rate_plot(proba,set_num,second_proba,second_try_num)
+
+
+
 
 def startup():
     # config取得
@@ -55,7 +73,22 @@ def startup():
     proba = float(config_ini['CALC_STATE']['Proba'])    # 生起確率
     try_num = int(config_ini['CALC_STATE']['TryNum'])   # 試行回数
     set_num = int(config_ini['CALC_STATE']['SetNum'])   # 回数
-    main(proba,try_num,set_num)
+
+    # 2回目分
+    # 確率変更が途中であったか
+    second_flg = config_ini['CALC_STATE']['SecondFlg']
+    if second_flg == "True":
+        second_proba = float(config_ini['CALC_STATE']['SecondProba'])
+        second_try_num = int(config_ini['CALC_STATE']['SecondTryNum'])
+        second_set_num = int(config_ini['CALC_STATE']['SecondSetNum'])
+    else:
+        second_proba = None
+        second_try_num = None
+        second_set_num = None
+
+    main(proba,try_num,set_num, second_flg,
+         second_proba, second_try_num, second_set_num)
+
 
 
 if __name__ == '__main__':
