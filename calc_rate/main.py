@@ -51,6 +51,37 @@ def change_rate_plot(proba,set_num,second_proba,second_try_num):
     :param second_try_num:
     :return:
     """
+    rate = 1 - proba
+    #print("初期に外れる確率:",conflict_event)
+
+    i_list = []
+    rate_list = []
+
+    for i in range(set_num):
+        rate_list.append(rate)
+        i_list.append(i)
+        rate = rate * (1 - proba)
+        print("{}回目まで連続で外れる確率".format(i+1),  rate)
+
+    print("確率変更を行います")
+    for i in range(i+1, i + second_try_num):
+        rate_list.append(rate)
+        i_list.append(i)
+        rate = rate * (1 - second_proba)
+        print("{}回目まで連続で外れる確率".format(i), rate)
+
+    fig, ax = plt.subplots()
+    # ヒストグラムを描画する。
+    ax.plot(i_list, rate_list)
+
+    # 軸ラベルとタイトル
+    ax.set_xlabel("Number of trials")
+    ax.set_ylabel("Probability of occurrence")
+    ax.set_title("rate")
+
+    plt.show()
+
+    # Todo 確率を変更した境界を色分けしたい
 
 
 def main(proba, try_num, set_num,second_flg,
