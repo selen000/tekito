@@ -1,5 +1,10 @@
 # 文字列とか前処理用
 import pandas as pd
+import MeCab
+
+wakati=MeCab.Tagger("-Owakati")
+
+
 
 
 def kanzi_to_number(word):
@@ -25,22 +30,15 @@ def number_to_kanzi(word):
     return word
 
 
-def osaka_replace(word):
+def osaka_replace(word, df, base_word_col):
     """
+    word : 変換したい文字列
+    df : 変換用対応データフレーム
+    base_word_col : 変換前の方便のカラム名
+
     方便を置換する
-    とりあえず辞書渡してfor文で1文字ずつ置換する感じで
     """
-
-    # Todo 外部ファイルで管理できるようにする
-    osakadict = {"おもろい": "面白い",
-                 "ほんま": "本当に",
-                 "ちゃう": "違う",
-                 "せや": "そうだ",
-                 "はよ": "早く",
-                 "かまへん": "構わない",
-                 "突き出し": "お通し"}
-
-    for k, v in osakadict.items():
+    for k, v in zip(df[base_word_col], df["標準語"]):
         word = word.replace(k, v)
     return word
 
@@ -57,10 +55,18 @@ def remove_kigou(word):
     return no_punct
 
 
+def wakatigaki(word):
+    word_list = wakati.parse(word).split()
+    return word_list
+
+
 if __name__ == '__main__':
     osaka_df = pd.read_csv("osaka_dict.csv", encoding="sjis")
-    print(osaka_df)
+    origin_word_col = "関西弁"
+    replace_word_col = "標準語"
 
-    # word = osaka_replace("ほんま面白いわ,せやはよ行こう")
-    word = remove_kigou("ほんま面白いわ,せ、やはよ行こう")
-    print(word)
+    word = "ほんまおもろいわ,せやはよ行こう"
+
+    word = osaka_replace(word, osaka_df, origin_word_col)
+    word = wakatigaki(word)
+    #print(word)
