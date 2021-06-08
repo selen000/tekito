@@ -2,19 +2,18 @@
 import pandas as pd
 import MeCab
 
+# 抽象クラス用
+from abc import ABCMeta, abstractmethod
+
 wakati=MeCab.Tagger("-Owakati")
 
-
-
-
-class translate_kansai():
-    def __init__(self):
-        self.origin_word_col = "関西弁"
-        self.replace_word_col = "標準語"
+# baseとなるクラスを作る
+class base_translate(metaclass=ABCMeta):
 
     def kanzi_to_number(self, word):
         """
         漢字文字列を、数字に変換する
+        Todo 問題点　十五　を変換すると105になってしまう。十は後続の文字を見て判断した方が良い
         word : str
         変換対象の文字列
         """
@@ -37,8 +36,21 @@ class translate_kansai():
 
         return word
 
+    @abstractmethod
+    def dialect_replace(self):
+        """
+        方便を標準語に修正する
+        各翻訳用のクラスで必ず実装する
+        """
+        pass
 
-    def osaka_replace(self, word, df, base_word_col= None):
+
+class translate_kansai(base_translate):
+    def __init__(self):
+        self.origin_word_col = "関西弁"
+        self.replace_word_col = "標準語"
+
+    def dialect_replace(self, word, df, base_word_col= None):
         """
         word : 変換したい文字列
         df : 変換用対応データフレーム
@@ -71,13 +83,23 @@ class translate_kansai():
         return word_list
 
 
+class translate_hokkaido(base_translate):
+
+    def dialect_replace(self):
+        pass
+
+
+
 if __name__ == '__main__':
     osaka_df = pd.read_csv("osaka_dict.csv", encoding="sjis")
 
     a = translate_kansai()
 
-    word = "ほんまおもろいわ,せやはよ行こう"
+    word = "ほんまおもろいわ,せやはよ行こう十五"
+    word = a.kanzi_to_number(word)
 
-    word = a.osaka_replace(word, osaka_df, base_word_col="関西弁")
-    word = a.wakatigaki(word)
+    word = a.dialect_replace(word, osaka_df, base_word_col="関西弁")
+    #word = a.wakatigaki(word)
     print(word)
+
+    a = translate_hokkaido()
