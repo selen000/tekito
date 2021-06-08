@@ -58,6 +58,14 @@ class translate_kansai(base_translate):
 
         方便を置換する
         """
+        df = df[[self.origin_word_col, self.replace_word_col]]
+        df = df.dropna()
+
+        # 塊で処理した方が翻訳ミスが減ると仮定して、辞書の単語の長さでソートする
+        df["len_"] = df[self.origin_word_col].apply(lambda x: len(x))
+        df = df.sort_values("len_", ascending=False)
+
+
         if base_word_col == None:
             base_word_col = self.origin_word_col
 
@@ -88,18 +96,67 @@ class translate_hokkaido(base_translate):
     def dialect_replace(self):
         pass
 
+class translate_kogo(base_translate):
+    def __init__(self):
+        self.origin_word_col = "古語"
+        self.replace_word_col = "標準語"
+
+    def dialect_replace(self, word, df, base_word_col= None):
+        """
+        word : 変換したい文字列
+        df : 変換用対応データフレーム
+        base_word_col : 変換前の方便のカラム名
+
+        方便を置換する
+        """
+        df = df[[self.origin_word_col, self.replace_word_col]]
+        df = df.dropna()
+
+        # 塊で処理した方が翻訳ミスが減ると仮定して、辞書の単語の長さでソートする
+        df["len_"] = df[self.origin_word_col].apply(lambda x: len(x))
+        df = df.sort_values("len_", ascending=False)
+
+
+
+        if base_word_col == None:
+            base_word_col = self.origin_word_col
+
+        for k, v in zip(df[base_word_col], df[self.replace_word_col]):
+            word = word.replace(k, v)
+        return word
+
+
 
 
 if __name__ == '__main__':
     osaka_df = pd.read_csv("osaka_dict.csv", encoding="sjis")
 
-    a = translate_kansai()
 
-    word = "ほんまおもろいわ,せやはよ行こう十五"
-    word = a.kanzi_to_number(word)
+    #a = translate_kansai()
 
-    word = a.dialect_replace(word, osaka_df, base_word_col="関西弁")
+    #word = "ほんまおもろいわ,せやはよ行こう十五"
+    #word = a.kanzi_to_number(word)
+
+
+    #word = a.dialect_replace(word, osaka_df, base_word_col="関西弁")
     #word = a.wakatigaki(word)
+
+    #a = translate_hokkaido()
+
+    word = "春はあけぼの。やうやうしろくなりゆく山ぎは、すこしあかりて、紫だちたる雲のほそくたなびきたる。夏は夜。\
+    月の頃はさらなり、闇もなほ、蛍のおほく飛びちがひたる。また、ただ一つ二つなど、ほのかにうち光りて行くも、をかし。雨など降るも、をかし。\
+    秋は夕暮れ。夕日のさして、山の端いと近くなりたるに、烏（からす）の、寝所（ねどころ）へ行くとて、三つ四つ、二つ三つなど、飛び急ぐさへ、あはれなり。\
+    まいて、雁（かり）などのつらねたるが、いと小さく見ゆるは、いとをかし。\
+    日入りはてて、風の音、虫の音など、はた、言ふべきにあらず。\
+    冬はつとめて。雪の降りたるは、言ふべきにもあらず。\
+    霜のいと白きも、またさらでも、いと寒きに、火など急ぎおこして、炭持てわたるも、いとつきづきし。\
+    昼になりて、ぬるくゆるびもていけば、火桶（ひおけ）の火も、白き灰がちになりて、わろし。"
+    a = translate_kogo()
+
+    print(word)
+    print("="*40)
+
+    word = a.dialect_replace(word, osaka_df, base_word_col="古語")
+
     print(word)
 
-    a = translate_hokkaido()
